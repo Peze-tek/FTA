@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  margin: 0; height: 100%; background: #07040f; color: #fff;
+  overscroll-behavior: none; -webkit-tap-highlight-color: transparent;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-user-select: none; user-select: none;
+}
+canvas { touch-action: none; display: block; }
+button { font-family: inherit; }
+
+.vignette { background: radial-gradient(ellipse at center, transparent 55%, rgba(5, 2, 15, 0.7) 100%); }
+
+/* 3D name tags (drei <Html>) */
+.nametag {
+  font: 900 11px/1 'Arial Black', Impact, sans-serif; color: #fff; letter-spacing: .06em;
+  background: rgba(0, 0, 0, .6); padding: 3px 7px; border-radius: 6px; white-space: nowrap;
+}
+.loading-tag {
+  font: 700 12px/1 ui-monospace, Menlo, monospace; color: #22d3ee; white-space: nowrap;
+  text-shadow: 0 0 8px #22d3ee; animation: blink 1s steps(2) infinite;
+}
+.sign {
+  font: 900 20px/1.1 'Arial Black', Impact, sans-serif; letter-spacing: .08em; white-space: nowrap;
+}
+
+.menu-bg {
+  background:
+    linear-gradient(180deg, rgba(10, 7, 22, .72) 0%, rgba(10, 7, 22, .38) 35%, rgba(10, 7, 22, .55) 70%, rgba(7, 4, 15, .9) 100%),
+    url('/landing-bg.jpg') center bottom / cover no-repeat,
+    #0a0716;
+}
+.title-logo {
+  background: linear-gradient(180deg, #fff 10%, #ff4fd8 55%, #22d3ee 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 18px rgba(255, 79, 216, .55));
+}
+
+@keyframes blink { 50% { opacity: .25; } }
+@keyframes fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes fade-out-slow { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+@keyframes price-up { 0% { transform: scale(1.18); text-shadow: 0 0 18px #39ff88; } 100% { transform: scale(1); text-shadow: 0 0 6px #39ff8855; } }
+@keyframes price-down { 0% { transform: scale(1.12); text-shadow: 0 0 18px #ff2d55; } 100% { transform: scale(1); } }
+@keyframes candle-pulse { 50% { opacity: .55; } }
+@keyframes banner-pop { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
+
+.fade-in { animation: fade-in .25s ease-out; }
+.fade-out-slow { animation: fade-out-slow 3.2s ease-in forwards; }
+.animate-shake { animation: shake .35s; }
+.price-up { animation: price-up .4s ease-out; display: inline-block; }
+.price-down { animation: price-down .4s ease-out; display: inline-block; }
+.candle-live { animation: candle-pulse 1s ease-in-out infinite; }
+.banner-pop { animation: banner-pop .5s ease-out; }
+
+/* ---- GTA-style HUD text: heavy italic with a hard black outline */
+.gta-text {
+  font-family: 'Arial Black', Impact, system-ui, sans-serif; font-style: italic; letter-spacing: .02em; color: #fff;
+  text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 3px 6px rgba(0,0,0,.65);
+}
+.gta-text.up { color: #c9ffd9; } .gta-text.down { color: #ffc2cd; }
+.gta-star { color: rgba(255,255,255,.28); text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
+.gta-star.on { color: #f7c948; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 8px rgba(247,201,72,.7); }
+.hud-glass { background: rgba(8,8,14,.55); border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(4px); }
+.icon-white { filter: grayscale(1) brightness(2.2) drop-shadow(0 1px 1px rgba(0,0,0,.7)); }
+
+@keyframes combo-pop { 0% { transform: scale(1.7); } 100% { transform: scale(1); } }
+.combo-pop { animation: combo-pop .22s ease-out; transform-origin: right center; }
