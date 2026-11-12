@@ -12,7 +12,7 @@ const themeFor = (s: ReturnType<typeof useGame.getState>): ThemeId => {
   if (s.cutscene?.id === 'grave' || s.tweet) return 'grave';
   if (s.gameOver) return 'grave';
   if (s.mode === 'survival') return s.free ? 'city' : 'survival';
-  if (s.level === 5 && s.mode !== 'survival' && s.fight.phase >= 1) return 'battle';   // the boss fight proper
+  if (s.level === 5 && s.fight.phase >= 1) return 'battle';   // the boss fight proper
   const map: Record<number, ThemeId> = { 1: 'city', 2: 'stealth', 3: 'brawl', 4: 'race', 5: 'duel' };
   return map[s.level as number] ?? 'city';
 };
