@@ -6,7 +6,7 @@ import { rng } from '@/lib/rng';
 import { registerColliders, boxFromCenter, type AABB } from '@/lib/colliders';
 import { BOX } from '@/game/materials';
 import { grassTexture } from '@/lib/textures';
-import { Instances, mat4 } from '@/game/world/City';
+import { cullRadius, Instances, mat4 } from '@/game/world/City';
 import { getBushGeo, getPalmGeo, getTreeGeo } from '@/game/world/foliage';
 
 /** Everything that stops the outer city feeling empty: street furniture, neon shop signs, verges, plazas with fountains, pocket parks. */
@@ -102,7 +102,7 @@ export default function CityDetail({ blds }: { blds: { x: number; z: number; cls
   }), []);
   const verge = useMemo(() => { const t = grassTexture().clone(); t.repeat.set((WORLD.maxX - WORLD.minX) / 5, 1); t.needsUpdate = true; return t; }, []);
   const pocketTex = useMemo(() => { const t = grassTexture().clone(); t.repeat.set(8, 3); t.needsUpdate = true; return t; }, []);
-  const I = (p: { m: THREE.Matrix4[]; c: THREE.Color[] }, mat: THREE.Material, g: THREE.BufferGeometry = BOX) => <Instances geometry={g} material={mat} matrices={p.m} colors={p.c} />;
+  const I = (p: { m: THREE.Matrix4[]; c: THREE.Color[] }, mat: THREE.Material, g: THREE.BufferGeometry = BOX) => <Instances cull={cullRadius()} geometry={g} material={mat} matrices={p.m} colors={p.c} />;
   const cyl = useMemo(() => new THREE.CylinderGeometry(0.5, 0.5, 1, 20), []);
   return (
     <group>
@@ -114,9 +114,9 @@ export default function CityDetail({ blds }: { blds: { x: number; z: number; cls
       {I(d.sign, m.glow)}
       {I(d.stone, m.std)}
       {I(d.fnt, m.std, cyl)}{I(d.water, m.water, cyl)}
-      <Instances geometry={getTreeGeo()} material={m.leaf} matrices={d.trees} cast />
-      <Instances geometry={getPalmGeo()} material={m.leaf} matrices={d.palms} cast />
-      <Instances geometry={getBushGeo()} material={m.leaf} matrices={d.bushes} />
+      <Instances cull={cullRadius()} geometry={getTreeGeo()} material={m.leaf} matrices={d.trees} cast />
+      <Instances cull={cullRadius()} geometry={getPalmGeo()} material={m.leaf} matrices={d.palms} cast />
+      <Instances cull={cullRadius()} geometry={getBushGeo()} material={m.leaf} matrices={d.bushes} />
     </group>
   );
 }

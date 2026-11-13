@@ -13,7 +13,7 @@ export function getQuality(): Quality {
     if (s === 'low' || s === 'med' || s === 'high') { cur = s; return cur; }
   } catch { /* private mode */ }
   const touch = typeof window !== 'undefined' && (window.matchMedia?.('(pointer: coarse)').matches || 'ontouchstart' in window);
-  cur = touch ? 'med' : 'high';
+  cur = touch ? 'low' : 'high';
   return cur;
 }
 export function setQuality(q: Quality) {

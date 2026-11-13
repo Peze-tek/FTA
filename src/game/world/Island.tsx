@@ -4,9 +4,10 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { ISLAND, BEACH } from '@/game/data/districts';
 import { rng } from '@/lib/rng';
+import { getQuality } from '@/lib/quality';
 import { registerColliders, boxFromCenter, type AABB } from '@/lib/colliders';
 import { BOX, glow } from '@/game/materials';
-import { Instances, mat4 } from '@/game/world/City';
+import { cullRadius, Instances, mat4 } from '@/game/world/City';
 import { getPalmGeo, getBushGeo } from '@/game/world/foliage';
 
 /** Beach, sea and shoreline dressing around the edge of the open-mode city. */
@@ -116,7 +117,7 @@ export default function Island() {
     <group>
       {/* the sea: deep base + a second drifting ripple layer */}
       <mesh rotation-x={-Math.PI / 2} position={[cx, -0.3, 0]}><planeGeometry args={[4000, 4000]} /><meshStandardMaterial map={waterA} roughness={0.25} metalness={0.15} /></mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[cx, -0.26, 0]}><planeGeometry args={[4000, 4000]} /><meshBasicMaterial map={waterB} transparent opacity={0.5} depthWrite={false} /></mesh>
+      {getQuality() !== 'low' && <mesh rotation-x={-Math.PI / 2} position={[cx, -0.26, 0]}><planeGeometry args={[4000, 4000]} /><meshBasicMaterial map={waterB} transparent opacity={0.5} depthWrite={false} /></mesh>}
 
       {SIDES.map((s, i) => (
         <group key={s.id} position={[s.ex, 0, s.ez]} rotation-y={s.ry}>
@@ -133,18 +134,18 @@ export default function Island() {
         </group>
       ))}
 
-      <Instances geometry={getPalmGeo()} material={mats.leaf} matrices={dec.palms} cast />
-      <Instances geometry={getBushGeo()} material={mats.leaf} matrices={dec.bushes} />
-      <Instances geometry={BOX} material={mats.std} matrices={dec.umbPole} colors={dec.umbPoleCol} />
-      <Instances geometry={new THREE.ConeGeometry(0.5, 1, 8)} material={mats.std} matrices={dec.umbTop} colors={dec.umbCol} />
-      <Instances geometry={BOX} material={mats.std} matrices={dec.lounger} colors={dec.loungerCol} />
-      <Instances geometry={BOX} material={mats.std} matrices={dec.towel} colors={dec.towelCol} />
-      <Instances geometry={new THREE.DodecahedronGeometry(0.8, 0)} material={mats.std} matrices={dec.rocks} colors={dec.rockCol} />
-      <Instances geometry={BOX} material={mats.std} matrices={dec.hutBody} colors={dec.hutCol} />
-      <Instances geometry={BOX} material={mats.wood} matrices={dec.hutRoof} />
-      <Instances geometry={BOX} material={mats.wood} matrices={dec.tower} />
-      <Instances geometry={BOX} material={mats.std} matrices={dec.boat} colors={dec.boatCol} />
-      <Instances geometry={new THREE.SphereGeometry(0.5, 8, 6)} material={mats.buoy} matrices={dec.buoy} />
+      <Instances cull={cullRadius()} geometry={getPalmGeo()} material={mats.leaf} matrices={dec.palms} cast />
+      <Instances cull={cullRadius()} geometry={getBushGeo()} material={mats.leaf} matrices={dec.bushes} />
+      <Instances cull={cullRadius()} geometry={BOX} material={mats.std} matrices={dec.umbPole} colors={dec.umbPoleCol} />
+      <Instances cull={cullRadius()} geometry={new THREE.ConeGeometry(0.5, 1, 8)} material={mats.std} matrices={dec.umbTop} colors={dec.umbCol} />
+      <Instances cull={cullRadius()} geometry={BOX} material={mats.std} matrices={dec.lounger} colors={dec.loungerCol} />
+      <Instances cull={cullRadius()} geometry={BOX} material={mats.std} matrices={dec.towel} colors={dec.towelCol} />
+      <Instances cull={cullRadius()} geometry={new THREE.DodecahedronGeometry(0.8, 0)} material={mats.std} matrices={dec.rocks} colors={dec.rockCol} />
+      <Instances cull={cullRadius()} geometry={BOX} material={mats.std} matrices={dec.hutBody} colors={dec.hutCol} />
+      <Instances cull={cullRadius()} geometry={BOX} material={mats.wood} matrices={dec.hutRoof} />
+      <Instances cull={cullRadius()} geometry={BOX} material={mats.wood} matrices={dec.tower} />
+      <Instances cull={cullRadius()} geometry={BOX} material={mats.std} matrices={dec.boat} colors={dec.boatCol} />
+      <Instances cull={cullRadius()} geometry={new THREE.SphereGeometry(0.5, 8, 6)} material={mats.buoy} matrices={dec.buoy} />
 
       {/* lighthouse on a rock out at sea */}
       <group position={[lighthouse.x, 0, lighthouse.z]}>

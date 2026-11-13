@@ -2,12 +2,21 @@
 export interface AABB { minX: number; maxX: number; minZ: number; maxZ: number }
 
 const sets = new Map<string, AABB[]>();
-let flat: AABB[] = [];
+const CELL = 24;
+let grid = new Map<number, AABB[]>();
+const key = (ix: number, iz: number) => (ix + 2048) * 4096 + (iz + 2048);
 
+/** Spatial hash: a circle only tests the boxes in the cells it touches instead of every box in the city. */
 function rebuild() {
-  const out: AABB[] = [];
-  sets.forEach((v) => { for (let i = 0; i < v.length; i++) out.push(v[i]); });
-  flat = out;
+  const g = new Map<number, AABB[]>();
+  sets.forEach((v) => {
+    for (let i = 0; i < v.length; i++) {
+      const b = v[i];
+      const x0 = Math.floor(b.minX / CELL), x1 = Math.floor(b.maxX / CELL), z0 = Math.floor(b.minZ / CELL), z1 = Math.floor(b.maxZ / CELL);
+      for (let ix = x0; ix <= x1; ix++) for (let iz = z0; iz <= z1; iz++) { const k = key(ix, iz); const a = g.get(k); if (a) a.push(b); else g.set(k, [b]); }
+    }
+  });
+  grid = g;
 }
 
 export function registerColliders(id: string, boxes: AABB[]) {
@@ -22,8 +31,11 @@ export const boxFromCenter = (cx: number, cz: number, w: number, d: number): AAB
 
 /** Push a circle (x,z,r) out of every overlapping box. Mutates pos. */
 export function resolveCircle(pos: { x: number; z: number }, r: number) {
-  for (let i = 0; i < flat.length; i++) {
-    const b = flat[i];
+  const x0 = Math.floor((pos.x - r) / CELL), x1 = Math.floor((pos.x + r) / CELL), z0 = Math.floor((pos.z - r) / CELL), z1 = Math.floor((pos.z + r) / CELL);
+  for (let ix = x0; ix <= x1; ix++) for (let iz = z0; iz <= z1; iz++) {
+    const cell = grid.get(key(ix, iz)); if (!cell) continue;
+    for (let i = 0; i < cell.length; i++) {
+    const b = cell[i];
     if (pos.x < b.minX - r || pos.x > b.maxX + r || pos.z < b.minZ - r || pos.z > b.maxZ + r) continue;
     const cx = Math.max(b.minX, Math.min(pos.x, b.maxX));
     const cz = Math.max(b.minZ, Math.min(pos.z, b.maxZ));
@@ -43,6 +55,7 @@ export function resolveCircle(pos: { x: number; z: number }, r: number) {
       else if (m === rr) pos.x = b.maxX + r;
       else if (m === t) pos.z = b.minZ - r;
       else pos.z = b.maxZ + r;
+    }
     }
   }
 }

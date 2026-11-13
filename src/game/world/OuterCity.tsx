@@ -9,7 +9,7 @@ import { registerColliders, boxFromCenter, type AABB } from '@/lib/colliders';
 import { BOX, toon, glow } from '@/game/materials';
 import { cityRoadTexture, grassTexture, pavingTexture } from '@/lib/textures';
 import { getBushGeo, getCarGeo, getPalmGeo, getTreeGeo } from '@/game/world/foliage';
-import { Instances, facadeMaterials, mat4, BUILDING_H } from '@/game/world/City';
+import { cullRadius, Instances, facadeMaterials, mat4, BUILDING_H } from '@/game/world/City';
 
 /**
  * The rest of the city: ring road, two more avenues each side of downtown, cross streets, filled city
@@ -201,7 +201,7 @@ export default function OuterCity() {
       })}
 
       {/* city blocks */}
-      {per.map((p, i) => <Instances key={i} geometry={geos[i]} material={mats[i]} matrices={p.m} colors={p.c} />)}
+      {per.map((p, i) => <Instances cull={cullRadius()} key={i} geometry={geos[i]} material={mats[i]} matrices={p.m} colors={p.c} />)}
 
       {/* park + pond (north & south) */}
       {[-1, 1].map((s) => {
@@ -223,14 +223,14 @@ export default function OuterCity() {
           </group>
         );
       })}
-      <Instances geometry={getPalmGeo()} material={treeMat} matrices={palms} cast />
-      <Instances geometry={getTreeGeo()} material={treeMat} matrices={trees} cast />
-      <Instances geometry={getBushGeo()} material={treeMat} matrices={bushes} />
+      <Instances cull={cullRadius()} geometry={getPalmGeo()} material={treeMat} matrices={palms} cast />
+      <Instances cull={cullRadius()} geometry={getTreeGeo()} material={treeMat} matrices={trees} cast />
+      <Instances cull={cullRadius()} geometry={getBushGeo()} material={treeMat} matrices={bushes} />
 
       {/* lamps + parked cars */}
-      <Instances geometry={BOX} material={lampMat} matrices={lampM} />
-      <Instances geometry={BOX} material={headMat} matrices={headM} />
-      <Instances geometry={carGeo} material={carMat} matrices={cars.map((c) => c.m)} colors={cars.map((c) => c.c)} />
+      <Instances cull={cullRadius()} geometry={BOX} material={lampMat} matrices={lampM} />
+      <Instances cull={cullRadius()} geometry={BOX} material={headMat} matrices={headM} />
+      <Instances cull={cullRadius()} geometry={carGeo} material={carMat} matrices={cars.map((c) => c.m)} colors={cars.map((c) => c.c)} />
     </group>
   );
 }

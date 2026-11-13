@@ -4,6 +4,8 @@ import Graffiti from '@/game/world/Graffiti';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Html } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
+import { getQuality } from '@/lib/quality';
 import { ROUTES, BUILDING_ROWS, rowZ, DISTRICTS, WORLD, type DistrictDef, type Landmark } from '@/game/data/districts';
 import { rng } from '@/lib/rng';
 import { registerColliders, boxFromCenter, type AABB } from '@/lib/colliders';
@@ -27,10 +29,15 @@ export function mat4(x: number, y: number, z: number, sx: number, sy: number, sz
 }
 
 /** One draw call for N copies of a mesh. */
-export function Instances({ geometry, material, matrices, colors, cast }: {
-  geometry: THREE.BufferGeometry; material: THREE.Material; matrices: THREE.Matrix4[]; colors?: THREE.Color[]; cast?: boolean;
+/** Draw radius for the big open-mode city, by graphics quality (instances further away than this aren't drawn at all). */
+export const cullRadius = () => ({ low: 115, med: 165, high: 240 }[getQuality()]);
+
+export function Instances({ geometry, material, matrices, colors, cast, cull }: {
+  geometry: THREE.BufferGeometry; material: THREE.Material; matrices: THREE.Matrix4[]; colors?: THREE.Color[]; cast?: boolean; cull?: number;
 }) {
   const ref = useRef<THREE.InstancedMesh>(null!);
+  const pts = useMemo(() => { const a = new Float32Array(matrices.length * 2); matrices.forEach((m, i) => { a[i * 2] = m.elements[12]; a[i * 2 + 1] = m.elements[14]; }); return a; }, [matrices]);
+  const last = useRef({ x: 1e9, z: 1e9 });
   useLayoutEffect(() => {
     const m = ref.current;
     if (!m) return;
@@ -38,7 +45,25 @@ export function Instances({ geometry, material, matrices, colors, cast }: {
     m.instanceMatrix.needsUpdate = true;
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
     m.computeBoundingSphere();
+    last.current.x = 1e9;
   }, [matrices, colors]);
+  // streaming: rewrite only the instances near the camera, every ~12 m of movement
+  useFrame(({ camera }) => {
+    const m = ref.current;
+    if (!cull || !m) return;
+    const cx = camera.position.x, cz = camera.position.z, l = last.current;
+    if (Math.abs(cx - l.x) < 12 && Math.abs(cz - l.z) < 12) return;
+    l.x = cx; l.z = cz;
+    const arr = m.instanceMatrix.array as Float32Array, carr = m.instanceColor?.array as Float32Array | undefined;
+    let k = 0;
+    for (let i = 0; i < matrices.length; i++) {
+      if (Math.abs(pts[i * 2] - cx) > cull || Math.abs(pts[i * 2 + 1] - cz) > cull) continue;
+      matrices[i].toArray(arr, k * 16);
+      if (carr && colors) colors[i].toArray(carr, k * 3);
+      k++;
+    }
+    m.count = k; m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true;
+  });
   if (!matrices.length) return null;
   return <instancedMesh key={matrices.length} ref={ref} args={[geometry, material, matrices.length]} frustumCulled={false} castShadow={!!cast} receiveShadow={!!cast} />;
 }
