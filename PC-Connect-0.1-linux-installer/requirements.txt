@@ -1,2 +1,0 @@
-cryptography>=43,<48
-tkinterdnd2>=0.4.3
