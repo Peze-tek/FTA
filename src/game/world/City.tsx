@@ -5,7 +5,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Html } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { getQuality } from '@/lib/quality';
 import { ROUTES, BUILDING_ROWS, rowZ, DISTRICTS, WORLD, type DistrictDef, type Landmark } from '@/game/data/districts';
 import { rng } from '@/lib/rng';
 import { registerColliders, boxFromCenter, type AABB } from '@/lib/colliders';
