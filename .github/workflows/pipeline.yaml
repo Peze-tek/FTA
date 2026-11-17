@@ -1,0 +1,58 @@
+# FAP THEFT AUTO — CI pipeline (GitHub Actions syntax).
+# To activate on GitHub, copy/move this file to .github/workflows/pipeline.yaml.
+# Vercel still does the actual deploys; this pipeline gates PRs and pushes with
+# the same checks Vercel would fail on (type errors, broken build).
+name: FTA pipeline
+
+on:
+  push:
+    branches: [main, update-live]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: fta-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  check:
+    name: Typecheck & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Typecheck (npm run lint = tsc --noEmit)
+        run: npm run lint
+
+      - name: Build (next build)
+        run: npm run build
+
+      - name: Cache Next.js build output
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+
+  # Vercel deploys on push by itself; this job only reports when checks are green.
+  ready:
+    name: Ready to deploy
+    needs: check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - run: echo "Checks passed — Vercel will deploy ${{ github.sha }}."
