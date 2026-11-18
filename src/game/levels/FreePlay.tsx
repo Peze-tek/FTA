@@ -326,14 +326,10 @@ export default function FreePlay() {
     sfx.boom(); haptic.notify('error'); S.current.shake = 1;
     useGame.getState().toast('CAR DESTROYED!', 'bad');
     for (const e of world.enemiesOf(jake)) if (Math.hypot(e.pos.x - c.x, e.pos.z - c.z) < BLAST_RADIUS) world.damage(e, 30 + 60 * (1 - Math.hypot(e.pos.x - c.x, e.pos.z - c.z) / BLAST_RADIUS), { x: c.x, z: c.z }, 9, jake);
-    if (drv.current === c) { jake.hp = 0; S.current.deathMsg = 'BLOWN UP'; useGame.getState().toast('BLOWN UP WITH THE CAR', 'bad'); }   // inside when it goes up = dead
-    else {
-      const d = Math.hypot(jake.pos.x - c.x, jake.pos.z - c.z);
-      if (d < BLAST_RADIUS) {                           // blast falls off with distance, never lethal from outside
-        const dmg = 8 + 52 * (1 - d / BLAST_RADIUS);
-        jake.hp = Math.max(1, jake.hp - dmg); jake.ref.current.hit = 1;
-        playerState.impulse.x += ((jake.pos.x - c.x) / (d || 1)) * 9; playerState.impulse.z += ((jake.pos.z - c.z) / (d || 1)) * 9;
-      }
+    const d = Math.hypot(jake.pos.x - c.x, jake.pos.z - c.z);
+    if (drv.current === c || d < BLAST_RADIUS) {          // inside the car, or caught in the blast = dead -> game over
+      jake.hp = 0; S.current.deathMsg = 'BLOWN UP'; useGame.getState().toast('BLOWN UP', 'bad');
+      playerState.impulse.x += ((jake.pos.x - c.x) / (d || 1)) * 9; playerState.impulse.z += ((jake.pos.z - c.z) / (d || 1)) * 9;
     }
   };
 
